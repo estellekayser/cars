@@ -3,8 +3,10 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import plotly.express as px
-
+import numpy as np
+from sklearn.linear_model import LinearRegression
 import pandas as pd
+import plotly.graph_objects as go
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -46,14 +48,19 @@ app.layout = html.Div([
     [Input('xaxis-column', 'value'),
      Input('yaxis-column', 'value')])
 def update_graph(xaxis_column_name, yaxis_column_name):
+
+    x = df[xaxis_column_name].values.reshape(-1, 1)
+    y = df[yaxis_column_name].values
+    model = LinearRegression().fit(x, y)
+
+    x_range = np.linspace(x.min(), x.max(), 100)
+    y_range = model.predict(x_range.reshape(-1, 1))
+
     fig = px.scatter(x=df[xaxis_column_name],
                      y=df[yaxis_column_name])
-
-    fig.update_layout(margin={'l': 40, 'b': 40, 't': 10, 'r': 0}, hovermode='closest')
+    fig.add_traces(go.Scatter(x=x_range, y=y_range))
     fig.update_xaxes(title=xaxis_column_name)
     fig.update_yaxes(title=yaxis_column_name)
-
-
 
     return fig
 
