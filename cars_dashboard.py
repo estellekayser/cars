@@ -7,44 +7,93 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 import pandas as pd
 import plotly.graph_objects as go
+import seaborn as sns
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+## Correction et ajout variables
 df = pd.read_csv("data/carData.csv")
 
 svar = ('Year', 'Owner','Selling_Price', 'Present_Price', 'Kms_Driven')
 vquanti = ('Selling_Price', 'Present_Price', 'Kms_Driven')
-
-## Stat
-
+vquali = ('Car_Name','Year','Fuel_Type', 'Seller_Type', 'Transmission')
 
 app.layout = html.Div([
-    html.H1(''' Analyse bivariée '''),
+
     html.Div([
         html.Div([
-            html.Div('''Abscisse'''),
-            dcc.Dropdown(
-                id='xaxis-column',
-                options=[{'label': i, 'value': i} for i in svar],
-                value='Year'
-            ),
-            
-        ],
-        style={'width': '48%', 'display': 'inline-block'}),
+            html.H1(''' Analyse univariée ''')
+            ]),
 
         html.Div([
-            html.Div('''Ordonnée'''),
-            dcc.Dropdown(
-                id='yaxis-column',
-                options=[{'label': i, 'value': i} for i in vquanti],
-                value='Selling_Price'
-            ),
-           
-        ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+            html.Div([
+                html.H2(''' Variables qualitatives '''),
+                html.Div([
+                    html.Div('''Choisir une variable'''),
+                    dcc.Dropdown(
+                        id='vquali_choose',
+                        options=[{'label': i, 'value': i} for i in vquali],
+                        value='Year'
+                    ),
+                ],
+                style={'width': '48%', 'display': 'inline-block'}),
+                dcc.Graph(id='univariate_quali'),
+            ]),
+
+            html.Div([
+                html.H2(''' Variables quantitatives '''),
+                html.Div([
+                    html.Div('''Choisir une variable'''),
+                    dcc.Dropdown(
+                        id='vquanti_choose',
+                        options=[{'label': i, 'value': i} for i in vquanti],
+                        value='Selling_Price'
+                    ),
+                ],
+                style={'width': '48%', 'display': 'inline-block'}),
+                dcc.Graph(id='univariate_quanti'),
+            ]),
+            ], style={'columnCount': 2,} 
+        ),
+    ], 
+    ),
+
+    html.Div([
+        html.H1(''' Analyse bivariée '''),
+        html.Div([
+            html.Div([
+                html.Div('''Abscisse'''),
+                dcc.Dropdown(
+                    id='xaxis-column',
+                    options=[{'label': i, 'value': i} for i in svar],
+                    value='Year'
+                ),
+                
+            ],
+            style={'width': '48%', 'display': 'inline-block'}),
+
+            html.Div([
+                html.Div('''Ordonnée'''),
+                dcc.Dropdown(
+                    id='yaxis-column',
+                    options=[{'label': i, 'value': i} for i in vquanti],
+                    value='Selling_Price'
+                ),
+            
+            ],style={'width': '48%', 'float': 'right', 'display': 'inline-block'})
+        ]),
+        dcc.Graph(id='linear'),
     ]),
-    dcc.Graph(id='linear'),
+
+    # html.Div([
+    #     html.H1(''' Analyse multivariee '''),
+    #     html.Div([
+            
+    #     ]),
+    #     dcc.Graph(id='multivariee'),
+    # ])
 ])
 
 ## Callback
@@ -52,22 +101,37 @@ app.layout = html.Div([
     Output('linear', 'figure'),
     [Input('xaxis-column', 'value'),
      Input('yaxis-column', 'value')])
-def update_graph(xaxis_column_name, yaxis_column_name):
+def update_graph2(xvar, yvar):
 
-    x = df[xaxis_column_name].values.reshape(-1, 1)
-    y = df[yaxis_column_name].values
+    x = df[xvar].values.reshape(-1, 1)
+    y = df[yvar].values
     model = LinearRegression().fit(x, y)
 
     x_range = np.linspace(x.min(), x.max(), 100)
     y_range = model.predict(x_range.reshape(-1, 1))
 
-    fig = px.scatter(x=df[xaxis_column_name],
-                     y=df[yaxis_column_name], title='Relation entre %s et %s' %(xaxis_column_name, yaxis_column_name))
+    fig = px.scatter(x=df[xvar],
+                     y=df[yvar], title='Relation entre %s et %s' %(xvar, yvar))
     fig.add_traces(go.Scatter(x=x_range, y=y_range, name=('Y = %f.X + %f' %(model.coef_, model.intercept_))))
-    fig.update_xaxes(title=xaxis_column_name)
-    fig.update_yaxes(title=yaxis_column_name)
+    fig.update_xaxes(title=xvar)
+    fig.update_yaxes(title=yvar)
 
     return fig
+
+
+@app.callback(
+    Output('univariate_quali', 'figure'),
+    [Input('vquali_choose', 'value')])
+def update_graph1(var):
+    fig = px.histogram(df, x=var)
+    return fig 
+
+@app.callback(
+    Output('univariate_quanti', 'figure'),
+    [Input('vquanti_choose', 'value')])
+def update_graph3(var):
+    fig = px.box(df, x=var)
+    return fig 
 
 if __name__ == '__main__':
     app.run_server(debug=True)
