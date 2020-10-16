@@ -1,5 +1,3 @@
-# cars
-
 <h1> Mini projet Data Vis</h1>
 
 
