@@ -9,11 +9,11 @@
 <br/>requirements.txt
 <br/>Procfile </p> 
 
-
+<p> Lien heroku : https://carsdigital.herokuapp.com/ </p>
 
 
 <h2> Autres fichiers : </h2>
 <p> <br/>cars_descriprive.py     --> a permis de faire les stats descriptives
 <br/>cars_sql.py              --> a permis de faire la connexion avec MySQL  </p> 
 
-<p> Lien heroku : https://carsdigital.herokuapp.com/ </p>
+
