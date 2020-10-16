@@ -12,10 +12,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from sklearn import svm
 from sklearn.model_selection import train_test_split
-
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+from app import app
+from app import server
 
 ## Correction et ajout variables
 df = pd.read_csv("data/carData.csv")
